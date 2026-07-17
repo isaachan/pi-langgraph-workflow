@@ -1,0 +1,24 @@
+{
+  "name": "pi-langgraph-workflow",
+  "version": "0.1.1",
+  "description": "A generic Pi extension that implements LangGraph-like workflows with transitions, joins, dynamic fan-out, and configurable node runners.",
+  "keywords": [
+    "pi-package"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "extensions",
+    "README.md",
+    "examples"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ]
+  }
+}

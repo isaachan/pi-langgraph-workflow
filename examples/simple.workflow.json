@@ -1,0 +1,53 @@
+{
+  "entry": "discover",
+  "finish": ["done"],
+  "runner": {
+    "type": "command",
+    "command": [
+      "node",
+      "-e",
+      "const fs = require('node:fs'); const [node, template, item, runDir] = process.argv.slice(1); fs.mkdirSync(runDir, { recursive: true }); fs.appendFileSync(`${runDir}/workflow.log`, `${new Date().toISOString()} node=${node} template=${template} item=${item || '-'}\\n`); console.log(`ran ${node}`);",
+      "{node}",
+      "{template}",
+      "{item}",
+      "{runDir}"
+    ]
+  },
+  "nodes": {
+    "discover": {
+      "description": "Run a discovery step and write an entry to the run log.",
+      "allowedTools": ["workflow_run_node", "workflow_transition"],
+      "next": ["plan"]
+    },
+    "plan": {
+      "description": "Run a planning step before creating dynamic branches.",
+      "allowedTools": ["workflow_run_node", "workflow_transition"],
+      "next": ["fanout_items"]
+    },
+    "fanout_items": {
+      "description": "Create dynamic branches. Example: workflow_fanout(group='items', template='process_item', items=['alpha','beta'], join='join_items').",
+      "allowedTools": ["workflow_fanout", "workflow_transition"],
+      "next": []
+    },
+    "process_item": {
+      "description": "Template node for dynamically generated branches such as process_item:alpha.",
+      "allowedTools": ["workflow_run_node", "workflow_transition"],
+      "next": ["join_items"]
+    },
+    "join_items": {
+      "description": "Dynamic join. This node becomes available after all process_item:<item> branches complete.",
+      "allowedTools": ["workflow_transition"],
+      "next": ["summarize"]
+    },
+    "summarize": {
+      "description": "Run a final summary step.",
+      "allowedTools": ["workflow_run_node", "workflow_transition"],
+      "next": ["done"]
+    },
+    "done": {
+      "description": "Workflow complete.",
+      "allowedTools": ["workflow_transition"],
+      "next": []
+    }
+  }
+}
