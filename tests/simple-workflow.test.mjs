@@ -24,3 +24,10 @@ test("example workflow runner declares a non-empty command", () => {
   assert.ok(Array.isArray(workflow.runner.command));
   assert.ok(workflow.runner.command.length > 0);
 });
+
+test("example workflow finish nodes are declared", () => {
+  assert.ok(Array.isArray(workflow.finish));
+  for (const nodeName of workflow.finish) {
+    assert.ok(workflow.nodes[nodeName], `missing finish node ${nodeName}`);
+  }
+});

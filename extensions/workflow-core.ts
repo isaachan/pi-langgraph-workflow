@@ -104,6 +104,10 @@ export function resolveNode(workflow: WorkflowConfig, nodeName: string): Workflo
 	return workflow.nodes[nodeName] ?? (isVirtualNode(nodeName) ? workflow.nodes[virtualTemplate(nodeName)] : undefined);
 }
 
+export function isFinishNode(workflow: WorkflowConfig, nodeName: string): boolean {
+	return (workflow.finish ?? []).includes(nodeName);
+}
+
 export function loadWorkflow(ctx: ExtensionContext, name: string): WorkflowConfig {
 	const path = join(ctx.cwd, CONFIG_DIR, `${name}.workflow.json`);
 	if (!existsSync(path)) throw new Error(`Workflow not found: ${path}`);
@@ -129,6 +133,12 @@ export function validateWorkflow(workflow: WorkflowConfig, name = "workflow"): v
 	if (!workflow.entry || typeof workflow.entry !== "string") throw new Error(`${name}: entry must be a string`);
 	if (!workflow.nodes || typeof workflow.nodes !== "object") throw new Error(`${name}: nodes must be an object`);
 	if (!workflow.nodes[workflow.entry]) throw new Error(`${name}: entry node '${workflow.entry}' is missing`);
+	if (workflow.finish !== undefined && (!Array.isArray(workflow.finish) || workflow.finish.some((v) => typeof v !== "string"))) {
+		throw new Error(`${name}: finish must be a string array`);
+	}
+	for (const finishNode of workflow.finish ?? []) {
+		if (!workflow.nodes[finishNode]) throw new Error(`${name}: finish node '${finishNode}' is missing`);
+	}
 	validateRunner(workflow.runner, `${name}`);
 
 	for (const [nodeName, node] of Object.entries(workflow.nodes)) {
@@ -204,6 +214,7 @@ export function nodeSummary(workflow: WorkflowConfig, nodeName: string, state?: 
 	return [
 		`node: ${nodeName}`,
 		virtual,
+		isFinishNode(workflow, nodeName) ? "finish: yes" : undefined,
 		node.description ? `description: ${node.description}` : undefined,
 		`allowedTools: ${node.allowedTools.join(", ") || "(none)"}`,
 		`next: ${node.next.join(", ") || "(none)"}`,

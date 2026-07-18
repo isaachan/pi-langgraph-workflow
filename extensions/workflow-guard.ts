@@ -10,6 +10,7 @@ import {
 	buildRunnerCommand,
 	canTransition,
 	getToolPath,
+	isFinishNode,
 	loadState,
 	loadWorkflow,
 	markCompleted,
@@ -136,11 +137,13 @@ export default function workflowGuard(pi: ExtensionAPI) {
 			markCompleted(state, state.currentNode);
 			state.currentNode = params.target;
 			state.available = (state.available ?? []).filter((n) => n !== params.target);
+			const finished = isFinishNode(workflow, params.target);
+			if (finished) markCompleted(state, params.target);
 			saveState(ctx, state);
 			setStatus(ctx);
 			return {
-				content: [{ type: "text", text: `Transitioned to '${params.target}'.\n${nodeSummary(workflow, params.target, state)}` }],
-				details: { target: params.target, reason: params.reason },
+				content: [{ type: "text", text: `${finished ? "Workflow finished" : "Transitioned"} at '${params.target}'.\n${nodeSummary(workflow, params.target, state)}` }],
+				details: { target: params.target, reason: params.reason, finished },
 			};
 		},
 	});
@@ -267,6 +270,7 @@ export default function workflowGuard(pi: ExtensionAPI) {
 				`\n\n# Strict Workflow Guard\n` +
 				`An extension enforces a LangGraph-like workflow. Current workflow: ${state.workflow}.\n` +
 				`${nodeSummary(workflow, state.currentNode, state)}\n` +
+				(isFinishNode(workflow, state.currentNode) ? `The current node is a finish node; the workflow is complete. ` : "") +
 				`You may only call tools in allowedTools for the current node. To move nodes, call ${TRANSITION_TOOL}. ` +
 				`Only these static transitions are currently legal: ${current.next.join(", ") || "none"}. ` +
 				`Runtime available nodes: ${(state.available ?? []).join(", ") || "none"}. ` +
