@@ -1,6 +1,6 @@
 {
   "name": "pi-langgraph-workflow",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A generic Pi extension that implements LangGraph-like workflows with transitions, joins, dynamic fan-out, and configurable node runners.",
   "keywords": [
     "pi-package",
