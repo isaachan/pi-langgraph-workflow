@@ -1,6 +1,6 @@
 {
   "name": "pi-langgraph-workflow",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A generic Pi extension that implements LangGraph-like workflows with transitions, joins, dynamic fan-out, and configurable node runners.",
   "keywords": [
     "pi-package",
@@ -31,10 +31,14 @@
   },
   "pi": {
     "extensions": [
-      "./extensions"
-    ]
+      "./extensions/workflow-guard.ts"
+    ],
+    "image": "https://raw.githubusercontent.com/isaachan/pi-langgraph-workflow/main/site/assets/workflow-cover.png"
   },
-  "author": "Isaac",
+  "author": {
+    "name": "Isaac",
+    "url": "https://github.com/isaachan"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/isaachan/pi-langgraph-workflow.git"
