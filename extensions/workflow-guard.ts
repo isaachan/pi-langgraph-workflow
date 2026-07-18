@@ -1,6 +1,6 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import {
 	FANOUT_TOOL,
 	TRANSITION_TOOL,
@@ -24,6 +24,55 @@ import {
 	splitRuntimeNode,
 	uniq,
 } from "./workflow-core.ts";
+
+const RUNNER_MAX_OUTPUT_BYTES = 10 * 1024 * 1024;
+
+interface RunnerCommandResult {
+	stdout: string;
+	stderr: string;
+	status: number | null;
+	signal: string | null;
+}
+
+function appendOutput(current: string, chunk: Buffer | string): string {
+	const next = current + chunk.toString();
+	if (Buffer.byteLength(next) <= RUNNER_MAX_OUTPUT_BYTES) return next;
+	return next.slice(next.length - RUNNER_MAX_OUTPUT_BYTES);
+}
+
+function runRunnerCommand(command: string, args: string[], cwd: string, signal?: AbortSignal): Promise<RunnerCommandResult> {
+	return new Promise((resolve, reject) => {
+		const child = spawn(command, args, { cwd, stdio: ["ignore", "pipe", "pipe"] });
+		let stdout = "";
+		let stderr = "";
+		let settled = false;
+
+		const abort = () => {
+			child.kill("SIGTERM");
+		};
+		if (signal?.aborted) abort();
+		signal?.addEventListener("abort", abort, { once: true });
+
+		child.stdout?.on("data", (chunk) => {
+			stdout = appendOutput(stdout, chunk);
+		});
+		child.stderr?.on("data", (chunk) => {
+			stderr = appendOutput(stderr, chunk);
+		});
+		child.on("error", (error) => {
+			if (settled) return;
+			settled = true;
+			signal?.removeEventListener("abort", abort);
+			reject(error);
+		});
+		child.on("close", (status, exitSignal) => {
+			if (settled) return;
+			settled = true;
+			signal?.removeEventListener("abort", abort);
+			resolve({ stdout, stderr, status, signal: exitSignal });
+		});
+	});
+}
 
 export default function workflowGuard(pi: ExtensionAPI) {
 	let state: WorkflowState | undefined;
@@ -162,7 +211,7 @@ export default function workflowGuard(pi: ExtensionAPI) {
 			node: Type.String({ description: "Workflow node to run. Must equal current node, e.g. load_minutes or write_mr_section:MR_A" }),
 			runDir: Type.String({ description: "Run/workspace directory passed to the runner as {runDir}" }),
 		}),
-		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
 			refresh(ctx);
 			if (!state?.active || !workflow) {
 				return { content: [{ type: "text", text: "No active workflow. Ask the user to run /workflow start <name>." }], isError: true };
@@ -186,18 +235,17 @@ export default function workflowGuard(pi: ExtensionAPI) {
 
 			const vars = { node: params.node, template, item, runDir: params.runDir, cwd: ctx.cwd };
 			const commandSpec = buildRunnerCommand(runner, vars);
-			const result = spawnSync(commandSpec.command, commandSpec.args, {
-				cwd: commandSpec.cwd || ctx.cwd,
-				encoding: "utf8",
-				maxBuffer: 10 * 1024 * 1024,
-			});
-
 			const command = [commandSpec.command, ...commandSpec.args].map((a) => JSON.stringify(a)).join(" ");
-			const stdout = result.stdout?.trim() ? `\nstdout:\n${result.stdout.trim()}` : "";
-			const stderr = result.stderr?.trim() ? `\nstderr:\n${result.stderr.trim()}` : "";
-			if (result.error) {
-				return { content: [{ type: "text", text: `Failed to run workflow node.\ncommand: ${command}\nerror: ${result.error.message}${stdout}${stderr}` }], isError: true };
+			let result: RunnerCommandResult;
+			try {
+				result = await runRunnerCommand(commandSpec.command, commandSpec.args, commandSpec.cwd || ctx.cwd, signal);
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				return { content: [{ type: "text", text: `Failed to run workflow node.\ncommand: ${command}\nerror: ${message}` }], isError: true };
 			}
+
+			const stdout = result.stdout.trim() ? `\nstdout:\n${result.stdout.trim()}` : "";
+			const stderr = result.stderr.trim() ? `\nstderr:\n${result.stderr.trim()}` : "";
 			if (result.status !== 0) {
 				return { content: [{ type: "text", text: `Workflow node exited with code ${result.status}.\ncommand: ${command}${stdout}${stderr}` }], isError: true, details: { status: result.status, signal: result.signal } };
 			}
