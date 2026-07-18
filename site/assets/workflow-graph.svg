@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 560" role="img" aria-labelledby="title desc">
+  <title id="title">Pi LangGraph Workflow graph preview</title>
+  <desc id="desc">A workflow graph moving from discover to plan, fan-out branches, join, summarize, and done.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f7a58" />
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#122924" flood-opacity=".16" />
+    </filter>
+  </defs>
+  <rect width="880" height="560" rx="24" fill="#f7faf9" />
+  <g fill="none" stroke="#1f7a58" stroke-width="4" marker-end="url(#arrow)" opacity=".9">
+    <path d="M160 120 H320" />
+    <path d="M440 120 H596" />
+    <path d="M686 164 C688 210 648 224 602 238" />
+    <path d="M686 164 C694 276 655 322 602 350" />
+    <path d="M470 238 H316" />
+    <path d="M470 350 H316" />
+    <path d="M220 374 C222 432 290 452 374 452" />
+    <path d="M506 452 H640" />
+  </g>
+  <g font-family="Inter, Arial, sans-serif" filter="url(#shadow)">
+    <g transform="translate(54 74)">
+      <rect width="130" height="92" rx="14" fill="#16211f" />
+      <text x="65" y="43" text-anchor="middle" font-size="19" font-weight="800" fill="#c8f7df">discover</text>
+      <text x="65" y="68" text-anchor="middle" font-size="13" fill="#dff6ec">run node</text>
+    </g>
+    <g transform="translate(330 74)">
+      <rect width="130" height="92" rx="14" fill="#ffffff" stroke="#d9e4e0" />
+      <text x="65" y="43" text-anchor="middle" font-size="19" font-weight="800" fill="#16211f">plan</text>
+      <text x="65" y="68" text-anchor="middle" font-size="13" fill="#52625f">transition</text>
+    </g>
+    <g transform="translate(610 74)">
+      <rect width="150" height="92" rx="14" fill="#c8f7df" />
+      <text x="75" y="42" text-anchor="middle" font-size="19" font-weight="800" fill="#0c6064">fanout</text>
+      <text x="75" y="68" text-anchor="middle" font-size="13" fill="#0c6064">create branches</text>
+    </g>
+    <g transform="translate(468 198)">
+      <rect width="164" height="82" rx="14" fill="#ffffff" stroke="#d9e4e0" />
+      <text x="82" y="38" text-anchor="middle" font-size="18" font-weight="800" fill="#16211f">process:alpha</text>
+      <text x="82" y="62" text-anchor="middle" font-size="13" fill="#52625f">runtime node</text>
+    </g>
+    <g transform="translate(468 310)">
+      <rect width="164" height="82" rx="14" fill="#ffffff" stroke="#d9e4e0" />
+      <text x="82" y="38" text-anchor="middle" font-size="18" font-weight="800" fill="#16211f">process:beta</text>
+      <text x="82" y="62" text-anchor="middle" font-size="13" fill="#52625f">runtime node</text>
+    </g>
+    <g transform="translate(154 304)">
+      <rect width="150" height="92" rx="14" fill="#ef7d59" />
+      <text x="75" y="42" text-anchor="middle" font-size="19" font-weight="800" fill="#ffffff">join</text>
+      <text x="75" y="68" text-anchor="middle" font-size="13" fill="#fff2ec">wait for all</text>
+    </g>
+    <g transform="translate(380 406)">
+      <rect width="140" height="92" rx="14" fill="#ffffff" stroke="#d9e4e0" />
+      <text x="70" y="42" text-anchor="middle" font-size="19" font-weight="800" fill="#16211f">summarize</text>
+      <text x="70" y="68" text-anchor="middle" font-size="13" fill="#52625f">run node</text>
+    </g>
+    <g transform="translate(648 406)">
+      <rect width="120" height="92" rx="14" fill="#d6a331" />
+      <text x="60" y="43" text-anchor="middle" font-size="19" font-weight="800" fill="#16211f">done</text>
+      <text x="60" y="68" text-anchor="middle" font-size="13" fill="#16211f">finish</text>
+    </g>
+  </g>
+  <g font-family="Inter, Arial, sans-serif" fill="#52625f" font-size="13">
+    <text x="54" y="520">Allowed tools, edges, dynamic groups, and runners are defined in .pi/workflows/*.workflow.json</text>
+  </g>
+</svg>

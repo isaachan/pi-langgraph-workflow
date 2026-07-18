@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pi LangGraph Workflow Extension</title>
+    <meta
+      name="description"
+      content="A Pi extension that adds strict LangGraph-like workflow control to coding-agent sessions with transitions, joins, fan-out, and command runners."
+    />
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Pi LangGraph Workflow home">
+        <span class="brand-mark">pi</span>
+        <span>LangGraph Workflow</span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#install">Install</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#tools">Tools</a>
+        <a href="#example">Example</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Pi extension for coding-agent sessions</p>
+          <h1>Put agent work on rails with project-local workflow graphs.</h1>
+          <p class="lede">
+            pi-langgraph-workflow lets teams define strict JSON workflows for Pi, then guides the agent through explicit
+            transitions, dynamic fan-out branches, joins, and node-specific runners.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#install">Install extension</a>
+            <a class="button secondary" href="#example">See example</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="Workflow graph preview">
+          <img src="./assets/workflow-graph.svg" alt="A workflow graph with discover, plan, fan-out, branch, join, summarize, and done nodes" />
+        </div>
+      </section>
+
+      <section class="band proof">
+        <div class="metric">
+          <strong>Strict transitions</strong>
+          <span>Move only across configured graph edges.</span>
+        </div>
+        <div class="metric">
+          <strong>Runtime branches</strong>
+          <span>Create branch nodes from discovered items.</span>
+        </div>
+        <div class="metric">
+          <strong>Command runners</strong>
+          <span>Run node logic through project-defined commands.</span>
+        </div>
+      </section>
+
+      <section class="section split" id="workflow">
+        <div>
+          <p class="eyebrow">How it works</p>
+          <h2>A workflow guard, not a distributed executor.</h2>
+          <p>
+            The extension reads workflow definitions from <code>.pi/workflows</code>, stores session-scoped state, and
+            injects the active node into the agent prompt. Tool calls are checked against the current node before they run.
+          </p>
+        </div>
+        <div class="steps" aria-label="Workflow lifecycle">
+          <div class="step">
+            <span>1</span>
+            <div>
+              <h3>Define the graph</h3>
+              <p>Create <code>&lt;name&gt;.workflow.json</code> with an entry node, finish nodes, allowed tools, and edges.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span>2</span>
+            <div>
+              <h3>Start the guard</h3>
+              <p>Run <code>/workflow start &lt;name&gt;</code>. The current node becomes part of the session state.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span>3</span>
+            <div>
+              <h3>Move deliberately</h3>
+              <p>Use <code>workflow_transition</code>, <code>workflow_fanout</code>, and <code>workflow_run_node</code> to progress.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="install">
+        <div class="section-heading">
+          <p class="eyebrow">Install</p>
+          <h2>Add it globally or per project.</h2>
+        </div>
+        <div class="code-grid">
+          <article class="code-panel">
+            <h3>Global install</h3>
+            <pre><code>pi install npm:pi-langgraph-workflow</code></pre>
+          </article>
+          <article class="code-panel">
+            <h3>Project-local install</h3>
+            <pre><code>pi install -l npm:pi-langgraph-workflow</code></pre>
+          </article>
+          <article class="code-panel wide">
+            <h3>Reload Pi</h3>
+            <pre><code>/reload</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="section tools" id="tools">
+        <div class="section-heading">
+          <p class="eyebrow">Commands and tools</p>
+          <h2>Small surface area, explicit control.</h2>
+        </div>
+        <div class="tool-grid">
+          <article>
+            <h3>/workflow start &lt;name&gt;</h3>
+            <p>Loads <code>.pi/workflows/&lt;name&gt;.workflow.json</code> and places the session at the entry node.</p>
+          </article>
+          <article>
+            <h3>/workflow status</h3>
+            <p>Shows the active workflow, current node, available runtime nodes, and completed nodes.</p>
+          </article>
+          <article>
+            <h3>workflow_transition</h3>
+            <p>Moves to an allowed next node and marks the previous node as completed.</p>
+          </article>
+          <article>
+            <h3>workflow_fanout</h3>
+            <p>Creates runtime nodes such as <code>process_item:alpha</code> and unlocks the join after all complete.</p>
+          </article>
+          <article>
+            <h3>workflow_run_node</h3>
+            <p>Runs the configured command for the current node with placeholder expansion.</p>
+          </article>
+          <article>
+            <h3>/workflow graph</h3>
+            <p>Displays the static graph plus any runtime fan-out edges created in the session.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section split example" id="example">
+        <div>
+          <p class="eyebrow">Example</p>
+          <h2>Start with the included workflow.</h2>
+          <p>
+            The repository includes <code>examples/simple.workflow.json</code>. Copy it into a project, start it, run the
+            current node, then transition through planning, fan-out branches, join, summarize, and done.
+          </p>
+          <div class="callout">
+            <strong>State stays local.</strong>
+            <span>Add <code>.pi/workflows/.state*.json</code> to <code>.gitignore</code> so session state does not land in commits.</span>
+          </div>
+        </div>
+        <div class="terminal" role="img" aria-label="Example workflow commands">
+          <pre><code>mkdir -p .pi/workflows
+cp examples/simple.workflow.json .pi/workflows/simple.workflow.json
+
+/workflow start simple
+
+workflow_run_node({
+  "node": "discover",
+  "runDir": "runs/simple-demo"
+})
+
+workflow_transition({
+  "target": "plan",
+  "reason": "discovery completed"
+})</code></pre>
+        </div>
+      </section>
+
+      <section class="section runners">
+        <div class="section-heading">
+          <p class="eyebrow">Runner placeholders</p>
+          <h2>Pass runtime context into your command.</h2>
+        </div>
+        <div class="placeholder-list">
+          <span><code>{node}</code> full node name</span>
+          <span><code>{template}</code> node template before <code>:</code></span>
+          <span><code>{item}</code> dynamic branch item after <code>:</code></span>
+          <span><code>{runDir}</code> run directory passed to the tool</span>
+          <span><code>{cwd}</code> current project directory</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>pi-langgraph-workflow</span>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

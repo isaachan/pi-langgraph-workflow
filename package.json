@@ -1,9 +1,22 @@
 {
   "name": "pi-langgraph-workflow",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "A generic Pi extension that implements LangGraph-like workflows with transitions, joins, dynamic fan-out, and configurable node runners.",
   "keywords": [
-    "pi-package"
+    "pi-package",
+    "pi",
+    "pi-coding-agent",
+    "pi-extension",
+    "extension",
+    "workflow",
+    "workflows",
+    "langgraph",
+    "langgraph-like",
+    "fanout",
+    "fan-out",
+    "orchestration",
+    "agent-workflow",
+    "coding-agent"
   ],
   "license": "MIT",
   "type": "module",
@@ -20,5 +33,14 @@
     "extensions": [
       "./extensions"
     ]
+  },
+  "author": "Isaac",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isaachan/pi-langgraph-workflow.git"
+  },
+  "homepage": "https://pi-langgraph-workflow.vercel.app/",
+  "bugs": {
+    "url": "https://github.com/isaachan/pi-langgraph-workflow/issues"
   }
 }
