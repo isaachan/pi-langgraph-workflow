@@ -46,5 +46,10 @@
   "homepage": "https://pi-langgraph-workflow.vercel.app/",
   "bugs": {
     "url": "https://github.com/isaachan/pi-langgraph-workflow/issues"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check site/app.js && npm pack --dry-run >/dev/null",
+    "build": "npm run check"
   }
 }
