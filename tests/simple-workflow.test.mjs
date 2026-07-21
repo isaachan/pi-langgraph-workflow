@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { canTransition } from "../extensions/workflow-core.ts";
 
 const workflow = JSON.parse(await readFile(new URL("../examples/simple.workflow.json", import.meta.url), "utf8"));
 
@@ -30,4 +31,47 @@ test("example workflow finish nodes are declared", () => {
   for (const nodeName of workflow.finish) {
     assert.ok(workflow.nodes[nodeName], `missing finish node ${nodeName}`);
   }
+});
+
+test("dynamic join rejects an early transition even when the template has a static edge to the join", () => {
+  const state = {
+    active: true,
+    workflow: "simple",
+    currentNode: "process_item:alpha",
+    available: ["process_item:beta", "process_item:gamma"],
+    completed: ["fanout_items"],
+    dynamicGroups: {
+      items: {
+        template: "process_item",
+        items: ["alpha", "beta", "gamma"],
+        join: "join_items",
+        nodes: ["process_item:alpha", "process_item:beta", "process_item:gamma"]
+      }
+    }
+  };
+
+  const result = canTransition(workflow, state, "join_items");
+
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /Pending dynamic join nodes: process_item:beta, process_item:gamma/);
+});
+
+test("dynamic join allows the final branch to transition to the join", () => {
+  const state = {
+    active: true,
+    workflow: "simple",
+    currentNode: "process_item:gamma",
+    available: [],
+    completed: ["fanout_items", "process_item:alpha", "process_item:beta"],
+    dynamicGroups: {
+      items: {
+        template: "process_item",
+        items: ["alpha", "beta", "gamma"],
+        join: "join_items",
+        nodes: ["process_item:alpha", "process_item:beta", "process_item:gamma"]
+      }
+    }
+  };
+
+  assert.deepEqual(canTransition(workflow, state, "join_items"), { ok: true });
 });

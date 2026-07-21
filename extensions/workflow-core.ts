@@ -235,11 +235,15 @@ export function canTransition(workflow: WorkflowConfig, state: WorkflowState, ta
 		return { ok: false, reason: `Cannot enter '${target}'. Pending static join nodes: ${staticPending.join(", ")}` };
 	}
 
+	const dynamicJoinGroups = Object.values(state.dynamicGroups ?? {}).filter((group) => group.join === target);
+	const dynamicPending = uniq(dynamicJoinGroups.flatMap((group) => group.nodes.filter((n) => !hypotheticalCompleted.has(n))));
+	if (dynamicPending.length > 0) {
+		return { ok: false, reason: `Cannot enter '${target}'. Pending dynamic join nodes: ${dynamicPending.join(", ")}` };
+	}
+
 	refreshJoinAvailability(state);
 	const available = new Set(state.available ?? []);
-	const dynamicJoinReady = Object.values(state.dynamicGroups ?? {}).some((group) => {
-		return group.join === target && group.nodes.every((n) => hypotheticalCompleted.has(n));
-	});
+	const dynamicJoinReady = dynamicJoinGroups.length > 0;
 	if (current.next.includes(target) || available.has(target) || dynamicJoinReady) return { ok: true };
 
 	return {
